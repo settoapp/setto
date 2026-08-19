@@ -1,3 +1,7 @@
+if (typeof window !== 'undefined' && window.location.hash && window.location.hash.includes('access_token')) {
+  sessionStorage.setItem('supabase_hash', window.location.hash);
+}
+
 import { registerRootComponent } from 'expo';
 
 import App from './App';

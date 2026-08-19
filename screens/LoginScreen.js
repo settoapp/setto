@@ -93,6 +93,10 @@ if (profile?.role === 'client') {
         </View>
 
         {/* Footer */}
+        <TouchableOpacity style={{ alignItems: 'center', marginBottom: 16 }} onPress={() => navigation.navigate('ForgotPassword')}>
+          <Text style={styles.footerLink}>Ai uitat parola?</Text>
+        </TouchableOpacity>
+
         <View style={styles.footer}>
           <Text style={styles.footerText}>Nu ai cont? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Register')}>
