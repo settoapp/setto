@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, Image } from 'react-native';
 import { supabase } from '../supabase';
 import { colors } from '../theme';
 
@@ -19,7 +19,7 @@ export default function ClientProfileSettingsScreen({ navigation }) {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, phone')
+        .select('full_name, phone, avatar_url')
         .eq('id', user.id)
         .single();
 
@@ -29,7 +29,8 @@ export default function ClientProfileSettingsScreen({ navigation }) {
           setInitials(profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase());
         }
         if (profile.phone) setPhone(profile.phone);
-        if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
+        console.log('Avatar URL din profil:', profile.avatar_url);
+        if (profile.avatar_url) setAvatarUrl(profile.avatar_url + '?t=' + Date.now());
       }
       setUserId(user.id);
     }
@@ -74,8 +75,10 @@ export default function ClientProfileSettingsScreen({ navigation }) {
       }
       const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
       const publicUrl = data.publicUrl;
-      await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId);
-      setAvatarUrl(publicUrl);
+      console.log('Public URL:', publicUrl);
+      const { error: updateError } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId);
+      console.log('Update error:', updateError);
+      setAvatarUrl(publicUrl + '?t=' + Date.now());
       setLoading(false);
     };
     input.click();
@@ -86,7 +89,7 @@ export default function ClientProfileSettingsScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={() => navigation.navigate('ClientHome')}>
             <Text style={styles.backText}>← Înapoi</Text>
           </TouchableOpacity>
           <Text style={styles.title}>Profilul meu</Text>
@@ -95,11 +98,12 @@ export default function ClientProfileSettingsScreen({ navigation }) {
         {/* Avatar */}
         <View style={styles.avatarContainer}>
           {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              style={{ width: 88, height: 88, borderRadius: 44, objectFit: 'cover' }}
-              alt="avatar"
-            />
+            <View style={styles.avatar}>
+              <img
+                src={avatarUrl + '?t=' + Date.now()}
+                style={{ width: 88, height: 88, borderRadius: 44, objectFit: 'cover', position: 'absolute', top: 0, left: 0 }}
+              />
+            </View>
           ) : (
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>{initials}</Text>
