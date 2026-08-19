@@ -9,6 +9,8 @@ export default function ClientProfileSettingsScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [initials, setInitials] = useState('?');
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -27,7 +29,9 @@ export default function ClientProfileSettingsScreen({ navigation }) {
           setInitials(profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase());
         }
         if (profile.phone) setPhone(profile.phone);
+        if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
       }
+      setUserId(user.id);
     }
     load();
   }, []);
@@ -50,6 +54,32 @@ export default function ClientProfileSettingsScreen({ navigation }) {
       Alert.alert('Succes', 'Profilul tău a fost actualizat!');
     }
   }
+  function handlePickImage() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      setLoading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) {
+        Alert.alert('Eroare', uploadError.message);
+        setLoading(false);
+        return;
+      }
+      const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      const publicUrl = data.publicUrl;
+      await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId);
+      setAvatarUrl(publicUrl);
+      setLoading(false);
+    };
+    input.click();
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -64,9 +94,20 @@ export default function ClientProfileSettingsScreen({ navigation }) {
 
         {/* Avatar */}
         <View style={styles.avatarContainer}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials}</Text>
-          </View>
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              style={{ width: 88, height: 88, borderRadius: 44, objectFit: 'cover' }}
+              alt="avatar"
+            />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{initials}</Text>
+            </View>
+          )}
+          <TouchableOpacity style={styles.uploadBtn} onPress={handlePickImage}>
+            <Text style={styles.uploadBtnText}>📷 Schimbă poza</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Email (read-only) */}
@@ -135,4 +176,6 @@ const styles = StyleSheet.create({
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   changePasswordBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 12 },
   changePasswordText: { fontSize: 15, color: colors.textPrimary, fontWeight: '500' },
+    uploadBtn: { marginTop: 10, borderWidth: 1, borderColor: colors.border, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
+  uploadBtnText: { fontSize: 14, color: colors.textPrimary, fontWeight: '500' },
 });
