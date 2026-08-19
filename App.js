@@ -14,6 +14,7 @@ import ReviewScreen from './screens/ReviewScreen';
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 import ResetPasswordScreen from './screens/ResetPasswordScreen';
 import { colors } from './theme';
+import ClientProfileSettingsScreen from './screens/ClientProfileSettingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,7 @@ const linking = {
       Review: 'recenzie/:bookingId',
       ForgotPassword: 'forgot-password',
       ResetPassword: 'reset-password',
+            ClientProfileSettings: 'profil',
     },
   },
 };
@@ -83,6 +85,7 @@ export default function App() {
         <Stack.Screen name="Review" component={ReviewScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+                <Stack.Screen name="ClientProfileSettings" component={ClientProfileSettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

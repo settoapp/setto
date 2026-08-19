@@ -11,6 +11,7 @@ export default function ClientHomeScreen({ navigation }) {
   const menuItems = [
     { icon: '🔍', label: 'Caută antrenori', screen: 'CoachList', desc: 'Găsește antrenorul potrivit' },
     { icon: '📋', label: 'Rezervările mele', screen: 'ClientBookings', desc: 'Vezi statusul programărilor tale' },
+    { icon: '👤', label: 'Profilul meu', screen: 'ClientProfileSettings', desc: 'Editează informațiile contului tău' },
   ];
 
   return (
